@@ -1,0 +1,411 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+define('BASE_DIR', dirname(__DIR__));
+define('TARGET_GLYPH_SIZE', 300);
+
+define('FONT_WEIGHT_THIN', 100);
+define('FONT_WEIGHT_EXTRA_LIGHT', 200);
+define('FONT_WEIGHT_LIGHT', 300);
+define('FONT_WEIGHT_REGULAR', 400);
+define('FONT_WEIGHT_MEDIUM', 500);
+define('FONT_WEIGHT_SEMI_BOLD', 600);
+define('FONT_WEIGHT_BOLD', 700);
+define('FONT_WEIGHT_EXTRA_BOLD', 800);
+define('FONT_WEIGHT_BLACK', 900);
+
+fwrite(STDERR, "Loading character list files ... ");
+$characterListFiles = findCharacterListFiles();
+fwrite(STDERR, "OK.\n");
+
+foreach (findSourceFonts() as $srcFontPath) {
+    $splitId = 0;
+    fprintf(STDERR, "≪%s≫\n", basename($srcFontPath));
+
+    $baseFontName = preg_replace(
+        '/[^a-z0-9]+/',
+        '-', 
+        strtolower(pathinfo($srcFontPath, PATHINFO_FILENAME)),
+    );
+
+    $srcFontHash = hash_file('sha256', $srcFontPath);
+
+    fprintf(STDERR, "  Getting codepoints from the file ... ");
+    $srcCodePoints = getCodepointsFromFont($srcFontPath);
+    fprintf(STDERR, "has %d glyphs\n", count($srcCodePoints));
+    $fontFaces = [];
+    foreach ($characterListFiles as $characterListFile => $characterList) {
+        fprintf(STDERR, "  * %s ... ", basename($characterListFile));
+        $codepoints = createCharacterList($srcCodePoints, $characterList);
+        fprintf(STDERR, " %d candidates, %d glyphs\n", count($characterList), count($codepoints));
+        if (count($codepoints) < 1) {
+            continue;
+        }
+
+        $createFontCount = max(1, (int)round(count($codepoints) / TARGET_GLYPH_SIZE));
+        $glyphsPerFont = (int)ceil(count($codepoints) / $createFontCount);
+        for ($i = 0; $i < $createFontCount; ++$i) {
+            ++$splitId;
+            $currentCodePoints = array_slice($codepoints, $i * $glyphsPerFont, $glyphsPerFont);
+            $tmpFontPath = createSubsettedTtf($srcFontPath, $currentCodePoints);
+            try {
+                vfprintf(STDERR, "   - Created [%d/%d] (temp: %s)\n", [
+                    $i + 1,
+                    $createFontCount,
+                    basename($tmpFontPath),
+                ]);
+
+                $hash = hash_hmac(
+                    'sha256',
+                    implode(',', $currentCodePoints),
+                    $srcFontHash,
+                );
+
+                $dstBaseName = sprintf('%02d-%s', $splitId, substr($hash, 0, 16));
+
+                $dstTtfPath = BASE_DIR . '/fonts/dist/ttf/' . $baseFontName . '/' . $dstBaseName . '.ttf';
+                mkdirP(dirname($dstTtfPath));
+                copy($tmpFontPath, $dstTtfPath);
+                fprintf(STDERR, "     - Copied to %s\n", basename($dstTtfPath));
+
+                $dstWoff1Path = BASE_DIR . '/fonts/dist/woff/' . $baseFontName . '/' . $dstBaseName . '.woff';
+                mkdirP(dirname($dstWoff1Path));
+                makeWoff1($dstTtfPath, $dstWoff1Path);
+                fwrite(STDERR, "     - Created woff\n");
+
+                $dstWoff2Path = BASE_DIR . '/fonts/dist/woff/' . $baseFontName . '/' . $dstBaseName . '.woff2';
+                mkdirP(dirname($dstWoff2Path));
+                makeWoff2($dstTtfPath, $dstWoff2Path);
+                fwrite(STDERR, "     - Created woff2\n");
+
+                $fontFaces[] = createFontFace(
+                    sourceFontToCssFontFamily($srcFontPath),
+                    sourceFontToLocalFontName($srcFontPath),
+                    false, // is italic
+                    sourceFontToWeight($srcFontPath),
+                    $dstTtfPath,
+                    stripDistPrefix($dstWoff1Path),
+                    stripDistPrefix($dstWoff2Path),
+                );
+            } finally {
+                unlink($tmpFontPath);
+            }
+        }
+    }
+
+    $cssPath = BASE_DIR . '/fonts/dist/woff/' . $baseFontName . '.css';
+
+    fprintf(STDERR, "  Creating CSS file ... ");
+    saveCss(
+        BASE_DIR . '/fonts/dist/woff/' . $baseFontName . '.css',
+        BASE_DIR . '/fonts/dist/woff/' . $baseFontName . '.min.css',
+        implode("\n", $fontFaces),
+    );
+    fprintf(STDERR, "OK.\n");
+    fwrite(STDERR, "\n");
+}
+
+function sourceFontToCssFontFamily(string $fontPath): string
+{
+    $fontFileName = strtolower((string)pathinfo($fontPath, PATHINFO_FILENAME));
+
+    if (preg_match('/^mplus(\d+)-/', $fontFileName, $match)) {
+        return sprintf('M PLUS %d', $match[1]);
+    }
+
+    throw new RuntimeException();
+}
+
+function sourceFontToLocalFontName(string $fontPath): string
+{
+    $fontFileName = strtolower((string)pathinfo($fontPath, PATHINFO_FILENAME));
+
+    if (preg_match('/^mplus(\d+)-/', $fontFileName, $match)) {
+        return sprintf('M PLUS %d', $match[1]);
+    }
+
+    throw new RuntimeException();
+}
+
+function sourceFontToWeight(string $fontPath): int
+{
+    $fontFileName = strtolower((string)pathinfo($fontPath, PATHINFO_FILENAME));
+
+    if (preg_match('/^mplus\d+-(\w+)/', $fontFileName, $match)) {
+        return match ($match[1]) {
+            'thin' => FONT_WEIGHT_THIN,
+            'extralight' => FONT_WEIGHT_EXTRA_LIGHT,
+            'light' => FONT_WEIGHT_LIGHT,
+            'regular' => FONT_WEIGHT_REGULAR,
+            'medium' => FONT_WEIGHT_MEDIUM,
+            'semibold' => FONT_WEIGHT_SEMI_BOLD,
+            'bold' => FONT_WEIGHT_BOLD,
+            'extrabold' => FONT_WEIGHT_EXTRA_BOLD,
+            'black' => FONT_WEIGHT_BLACK,
+            default => throw new RuntimeException(),
+        };
+    }
+
+    return FONT_WEIGHT_REGULAR;
+}
+
+function stripDistPrefix(string $path): string
+{
+    // INPUT:  .../fonts/dist/woff/mplus1-black/01-3f39c2be7ca9ce28.woff
+    // OUTPUT:                     mplus1-black/01-3f39c2be7ca9ce28.woff
+    $detector = '/woff/';
+    if (($pos = strpos($path, $detector)) === false) {
+        throw new RuntimeException();
+    }
+
+    return substr($path, $pos + strlen($detector));
+}
+
+/**
+ * @return string[]
+ */
+function findSourceFonts(): array
+{
+    $it = new CallbackFilterIterator(
+        new DirectoryIterator(BASE_DIR . '/fonts/src'),
+        fn (SplFileInfo $entry): bool => $entry->isFile() && in_array($entry->getExtension(), ['otf', 'ttf'], true),
+    );
+    $results = [];
+    foreach ($it as $entry) {
+        $results[] = $entry->getPathname();
+    }
+    sort($results, SORT_STRING);
+    return $results;
+}
+
+/**
+ * @return array<string, int[]>
+ */
+function findCharacterListFiles(): array
+{
+    $it = new CallbackFilterIterator(
+        new DirectoryIterator(BASE_DIR . '/data/characters'),
+        fn (SplFileInfo $entry): bool => $entry->isFile() && $entry->getExtension() === 'txt',
+    );
+    $results = [];
+    foreach ($it as $entry) {
+        $results[$entry->getPathname()] = loadCharacterList($entry->getPathname());
+    }
+    ksort($results, SORT_NATURAL);
+    return $results;
+}
+
+/**
+ * @return int[]
+ */
+function getCodepointsFromFont(string $fontPath): array
+{
+    $cmdline = vsprintf('/usr/bin/env %s %s', [
+        escapeshellarg(__DIR__ . '/extract_chars_from_ttf'),
+        escapeshellarg($fontPath),
+    ]);
+    exec($cmdline, $lines, $status);
+    if ($status !== 0) {
+        throw new RuntimeException('Failed to execute "extract_chars_from_ttf"');
+    }
+
+    $results = array_map(
+        fn (string $line): int => stringToInteger($line),
+        $lines,
+    );
+    sort($results, SORT_NUMERIC);
+    return array_values(array_unique($results));
+}
+
+/**
+ * @return int[]
+ */
+function loadCharacterList(string $textPath): array
+{
+    $fh = fopen($textPath, 'rt');
+    if (!$fh) {
+        throw new RuntimeException('Failed to open character list');
+    }
+    $results = [];
+    while (!feof($fh)) {
+        $line = fgets($fh);
+        if (is_string($line)) {
+            $line = rtrim($line, "\x0a\x0d");
+            if ($line !== '') {
+                $len = mb_strlen($line, 'UTF-8');
+                for ($i = 0; $i < $len; ++$i) {
+                    $cp = mb_ord(mb_substr($line, $i, 1, 'UTF-8'), 'UTF-8');
+                    if ($cp === false) {
+                        throw new RuntimeException();
+                    }
+                    $results[] = $cp;
+                }
+            }
+        }
+    }
+    sort($results, SORT_NUMERIC);
+    return array_values(array_unique($results));
+}
+
+/**
+ * @param int[] $codepoints1
+ * @param int[] $codepoints2
+ * @return int[]
+ */
+function createCharacterList(array $codepoints1, array $codepoints2): array
+{
+    return array_values(
+        array_filter(
+            $codepoints1,
+            fn (int $cp): bool => in_array($cp, $codepoints2, true),
+        ),
+    );
+}
+
+function stringToInteger(string $str): int
+{
+    $tmp = filter_var($str, FILTER_VALIDATE_INT);
+    return is_int($tmp) ? $tmp : throw new RuntimeException("Failed to convert to integer ({$str})");
+}
+
+/**
+ * @param int[] $codepoints
+ */
+function createSubsettedTtf(string $srcFontPath, array $codepoints): string
+{
+    $dstFontPath = BASE_DIR . '/runtime/' . hash('md5', uniqid('', true)) . '.ttf';
+
+    $cmdline = '/usr/bin/env fontforge -quiet -lang=ff -script - >/dev/null 2>/dev/null';
+    $descSpec = [['pipe', 'r'], ['pipe', 'w']];
+    $handle = proc_open($cmdline, $descSpec, $pipes);
+    if (!is_resource($handle)) {
+        throw new RuntimeException('Failed to execute fontforge');
+    }
+
+    foreach (createFontforgeScript($srcFontPath, $dstFontPath, $codepoints) as $line) {
+        fwrite($pipes[0], "{$line}\n");
+    }
+    fclose($pipes[0]);
+    fclose($pipes[1]);
+    $status = proc_close($handle);
+    if ($status !== 0) {
+        throw new RuntimeException('Fontforge exit with status ' . $status);
+    }
+
+    return $dstFontPath;
+}
+
+/**
+ * @param int[] $codepoints
+ * @return Generator<string>
+ */
+function createFontforgeScript(string $srcFontPath, string $dstFontPath, array $codepoints): Generator
+{
+    yield sprintf('Open("%s", 1);', $srcFontPath);
+    yield 'SelectNone();';
+    foreach ($codepoints as $cp) {
+        yield sprintf('SelectMore(0u%x);', $cp);
+    }
+    yield 'SelectInvert();';
+    yield 'DetachAndRemoveGlyphs();';
+    yield sprintf('Generate("%s", "", %d);', $dstFontPath, 0x4 | 0x8);
+}
+
+function makeWoff1(string $ttfPath, string $woffPath): void
+{
+    $cmdline = vsprintf('/usr/bin/env npx ttf2woff %s %s', [
+        escapeshellarg($ttfPath),
+        escapeshellarg($woffPath),
+    ]);
+    exec($cmdline, $lines, $status);
+    if ($status !== 0) {
+        throw new RuntimeException('Failed to execute ttf2woff');
+    }
+}
+
+function makeWoff2(string $ttfPath, string $woffPath): void
+{
+    $cmdline = vsprintf('/usr/bin/env npx ttf2woff2 < %s > %s', [
+        escapeshellarg($ttfPath),
+        escapeshellarg($woffPath),
+    ]);
+    exec($cmdline, $lines, $status);
+    if ($status !== 0) {
+        throw new RuntimeException('Failed to execute ttf2woff2');
+    }
+}
+
+function createFontFace(
+    string $cssFontFamily,
+    ?string $localFontName,
+    bool $isItalic,
+    int $weight,
+    string $localTtfPath,
+    ?string $webWoff1Path,
+    string $webWoff2Path
+): string {
+    $srcs = [];
+    if ($localFontName) {
+        $srcs[] = sprintf('local("%s")', $localFontName);
+    }
+    if ($webWoff2Path) {
+        $srcs[] = sprintf('url("%s") format("woff2")', $webWoff2Path);
+    }
+    if ($webWoff1Path) {
+        $srcs[] = sprintf('url("%s") format("woff")', $webWoff1Path);
+    }
+
+    $lines = [];
+    $lines[] = '@font-face {';
+    $lines[] = sprintf('  font-display: swap;');
+    $lines[] = sprintf('  font-family: "%s";', $cssFontFamily);
+    $lines[] = sprintf('  font-style: %s;', $isItalic ? 'italic' : 'normal');
+    $lines[] = sprintf('  font-weight: %d;', $weight);
+    $lines[] = sprintf('  src: %s;', implode(', ', $srcs));
+    $lines[] = sprintf('  text-rendering: optimizeLegibility;');
+    $lines[] = sprintf('  unicode-range: %s;', implode(', ', getUnicodeRange($localTtfPath)));
+    $lines[] = '}';
+    $lines[] = ''; // final new-line
+    return implode("\n", $lines);
+}
+
+function getUnicodeRange(string $ttfPath): array
+{
+    $cmdline = vsprintf('/usr/bin/env %s %s | /usr/bin/env %s', [
+        escapeshellarg(__DIR__ . '/extract_chars_from_ttf'),
+        escapeshellarg($ttfPath),
+        escapeshellarg(__DIR__ . '/unicode_range'),
+    ]);
+
+    exec($cmdline, $lines, $status);
+    if ($status !== 0) {
+        throw new RuntimeException('Failed to create unicode-range list');
+    }
+
+    return array_values($lines);
+}
+
+function saveCss(string $normalCssPath, string $minifiedCssPath, string $cssContent): void
+{
+    if (!file_put_contents($normalCssPath, $cssContent)) {
+        throw new RuntimeException();
+    }
+
+    $cmdline = vsprintf('/usr/bin/env npx postcss --use cssnano --no-map -o %s %s', [
+        escapeshellarg($minifiedCssPath),
+        escapeshellarg($normalCssPath),
+    ]);
+    exec($cmdline, $lines, $status);
+    if ($status !== 0) {
+        throw new RuntimeException();
+    }
+}
+
+function mkdirP(string $dir): void
+{
+    if (!file_exists($dir)) {
+        mkdir($dir, 0755, true);
+    }
+}
