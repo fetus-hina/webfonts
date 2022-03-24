@@ -111,6 +111,16 @@ function sourceFontToCssFontFamily(string $fontPath): string
 {
     $fontFileName = strtolower((string)pathinfo($fontPath, PATHINFO_FILENAME));
 
+    $simpleMap = [
+        'bizudgothic' => 'BIZ UDGothic',
+        'bizudpgothic' => 'BIZ UDPGothic',
+    ];
+    foreach ($simpleMap as $prefix => $name) {
+        if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {
+            return $name;
+        }
+    }
+
     if (preg_match('/^mplus(\d+)-/', $fontFileName, $match)) {
         return sprintf('M PLUS %d', $match[1]);
     }
@@ -121,6 +131,16 @@ function sourceFontToCssFontFamily(string $fontPath): string
 function sourceFontToLocalFontName(string $fontPath): string
 {
     $fontFileName = strtolower((string)pathinfo($fontPath, PATHINFO_FILENAME));
+
+    $simpleMap = [
+        'bizudgothic' => 'BIZ UDゴシック',
+        'bizudpgothic' => 'BIZ UDPゴシック',
+    ];
+    foreach ($simpleMap as $prefix => $name) {
+        if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {
+            return $name;
+        }
+    }
 
     if (preg_match('/^mplus(\d+)-/', $fontFileName, $match)) {
         return sprintf('M PLUS %d', $match[1]);
@@ -134,21 +154,30 @@ function sourceFontToWeight(string $fontPath): int
     $fontFileName = strtolower((string)pathinfo($fontPath, PATHINFO_FILENAME));
 
     if (preg_match('/^mplus\d+-(\w+)/', $fontFileName, $match)) {
-        return match ($match[1]) {
-            'thin' => FONT_WEIGHT_THIN,
-            'extralight' => FONT_WEIGHT_EXTRA_LIGHT,
-            'light' => FONT_WEIGHT_LIGHT,
-            'regular' => FONT_WEIGHT_REGULAR,
-            'medium' => FONT_WEIGHT_MEDIUM,
-            'semibold' => FONT_WEIGHT_SEMI_BOLD,
-            'bold' => FONT_WEIGHT_BOLD,
-            'extrabold' => FONT_WEIGHT_EXTRA_BOLD,
-            'black' => FONT_WEIGHT_BLACK,
-            default => throw new RuntimeException(),
-        };
+        return convertFontWeight($match[1]);
+    }
+
+    if (preg_match('/^bizudp?(?:gothic|mincho)-(bold|regular)/', $fontFileName, $match)) {
+        return convertFontWeight($match[1]);
     }
 
     return FONT_WEIGHT_REGULAR;
+}
+
+function convertFontWeight(string $weightString): int
+{
+    return match ($weightString) {
+        'thin' => FONT_WEIGHT_THIN,
+        'extralight' => FONT_WEIGHT_EXTRA_LIGHT,
+        'light' => FONT_WEIGHT_LIGHT,
+        'regular' => FONT_WEIGHT_REGULAR,
+        'medium' => FONT_WEIGHT_MEDIUM,
+        'semibold' => FONT_WEIGHT_SEMI_BOLD,
+        'bold' => FONT_WEIGHT_BOLD,
+        'extrabold' => FONT_WEIGHT_EXTRA_BOLD,
+        'black' => FONT_WEIGHT_BLACK,
+        default => throw new RuntimeException(),
+    };
 }
 
 function stripDistPrefix(string $path): string

@@ -1,4 +1,6 @@
 SOURCE_FONT_FILES := \
+	fonts/src/BIZUDPGothic-Bold.ttf \
+	fonts/src/BIZUDPGothic-Regular.ttf \
 	fonts/src/Mplus1-Black.otf \
 	fonts/src/Mplus1-Bold.otf \
 	fonts/src/Mplus1-ExtraBold.otf \
@@ -33,10 +35,16 @@ clean:
 		fonts/src/*.otf \
 		fonts/src/*.ttf
 
-fonts/src/%.otf:
+fonts/src/BIZUDGothic%.ttf:
+	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-gothic/raw/main/fonts/ttf/$(notdir $@)'
+
+fonts/src/BIZUDPGothic%.ttf:
+	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-gothic/raw/main/fonts/ttf/$(notdir $@)'
+
+fonts/src/Mplus%.otf:
 	curl -fsSL -o $@ 'https://github.com/coz-m/MPLUS_FONTS/raw/master/fonts/otf/$(notdir $@)'
 
-fonts/src/%.ttf:
+fonts/src/Mplus%.ttf:
 	curl -fsSL -o $@ 'https://github.com/coz-m/MPLUS_FONTS/raw/master/fonts/ttf/$(notdir $@)'
 
 node_modules: package-lock.json
