@@ -1,6 +1,7 @@
 SOURCE_FONT_FILES := \
 	fonts/src/BIZUDPGothic-Bold.ttf \
 	fonts/src/BIZUDPGothic-Regular.ttf \
+	fonts/src/BIZUDPMincho-Regular.ttf \
 	fonts/src/Mplus1-Black.otf \
 	fonts/src/Mplus1-Bold.otf \
 	fonts/src/Mplus1-ExtraBold.otf \
@@ -40,6 +41,12 @@ fonts/src/BIZUDGothic%.ttf:
 
 fonts/src/BIZUDPGothic%.ttf:
 	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-gothic/raw/main/fonts/ttf/$(notdir $@)'
+
+fonts/src/BIZUDMincho%.ttf:
+	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-mincho/raw/main/fonts/ttf/$(notdir $@)'
+
+fonts/src/BIZUDPMincho%.ttf:
+	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-mincho/raw/main/fonts/ttf/$(notdir $@)'
 
 fonts/src/Mplus%.otf:
 	curl -fsSL -o $@ 'https://github.com/coz-m/MPLUS_FONTS/raw/master/fonts/otf/$(notdir $@)'
