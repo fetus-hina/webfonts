@@ -129,6 +129,7 @@ function sourceFontToCssFontFamily(string $fontPath): string
         'bizudmincho' => 'BIZ UDMincho',
         'bizudpgothic' => 'BIZ UDPGothic',
         'bizudpmincho' => 'BIZ UDPMincho',
+        'notoserifjp' => 'Noto Serif JP',
     ];
     foreach ($simpleMap as $prefix => $name) {
         if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {
@@ -152,6 +153,7 @@ function sourceFontToLocalFontName(string $fontPath): string
         'bizudmincho' => 'BIZ UD明朝',
         'bizudpgothic' => 'BIZ UDPゴシック',
         'bizudpmincho' => 'BIZ UDP明朝',
+        'notoserifjp' => 'Noto Serif JP',
     ];
     foreach ($simpleMap as $prefix => $name) {
         if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {

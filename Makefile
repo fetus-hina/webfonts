@@ -2,24 +2,10 @@ SOURCE_FONT_FILES := \
 	fonts/src/BIZUDPGothic-Bold.ttf \
 	fonts/src/BIZUDPGothic-Regular.ttf \
 	fonts/src/BIZUDPMincho-Regular.ttf \
-	fonts/src/Mplus1-Black.otf \
 	fonts/src/Mplus1-Bold.otf \
-	fonts/src/Mplus1-ExtraBold.otf \
-	fonts/src/Mplus1-ExtraLight.otf \
-	fonts/src/Mplus1-Light.otf \
-	fonts/src/Mplus1-Medium.otf \
 	fonts/src/Mplus1-Regular.otf \
-	fonts/src/Mplus1-SemiBold.otf \
-	fonts/src/Mplus1-Thin.otf \
-	fonts/src/Mplus2-Black.otf \
 	fonts/src/Mplus2-Bold.otf \
-	fonts/src/Mplus2-ExtraBold.otf \
-	fonts/src/Mplus2-ExtraLight.otf \
-	fonts/src/Mplus2-Light.otf \
-	fonts/src/Mplus2-Medium.otf \
-	fonts/src/Mplus2-Regular.otf \
-	fonts/src/Mplus2-SemiBold.otf \
-	fonts/src/Mplus2-Thin.otf
+	fonts/src/Mplus2-Regular.otf
 
 .PHONY: all
 all: split-fonts
@@ -33,8 +19,8 @@ split-fonts: $(SOURCE_FONT_FILES) node_modules
 clean:
 	rm -rf \
 		fonts/dist/* \
-		fonts/src/*.otf \
-		fonts/src/*.ttf
+		fonts/src/BIZUD* \
+		fonts/src/Mplus*
 
 fonts/src/BIZUDGothic%.ttf:
 	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-gothic/raw/main/fonts/ttf/$(notdir $@)'
