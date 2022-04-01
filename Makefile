@@ -1,4 +1,6 @@
 SOURCE_FONT_FILES := \
+	fonts/src/BIZUDGothic-Bold.ttf \
+	fonts/src/BIZUDGothic-Regular.ttf \
 	fonts/src/BIZUDPGothic-Bold.ttf \
 	fonts/src/BIZUDPGothic-Regular.ttf \
 	fonts/src/BIZUDPMincho-Regular.ttf \
