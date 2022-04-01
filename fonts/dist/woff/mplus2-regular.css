@@ -23,9 +23,9 @@
   font-family: "M PLUS 2";
   font-style: normal;
   font-weight: 400;
-  src: local("M PLUS 2"), url("mplus2-regular/03-a4e8af122b8e42fa.woff2") format("woff2"), url("mplus2-regular/03-a4e8af122b8e42fa.woff") format("woff");
+  src: local("M PLUS 2"), url("mplus2-regular/03-12b8481832f0a3da.woff2") format("woff2"), url("mplus2-regular/03-12b8481832f0a3da.woff") format("woff");
   text-rendering: optimizeLegibility;
-  unicode-range: U+A1-AC, U+AE-BF, U+C5, U+D7, U+F7, U+2015, U+2018-2019, U+201C-201D, U+2020-2021, U+2026, U+2030, U+2070, U+2074, U+2116, U+2248, U+2260, U+25A0, U+25B2, U+25BC, U+3005-3006, U+3008-3009, U+300C-300F, U+3231-3232, U+4EDD;
+  unicode-range: U+A1-AC, U+AE-BF, U+C5, U+D7, U+F7, U+2015, U+2018-2019, U+201C-201D, U+2020-2021, U+2026, U+2030, U+2070, U+2074, U+2116, U+2248, U+2260, U+25A0, U+25B2, U+25BC, U+3005-3006, U+3008-3009, U+300C-300F, U+301C, U+3231-3232, U+4EDD;
 }
 
 @font-face {
