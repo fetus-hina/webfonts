@@ -352,6 +352,7 @@ function createSubsettedTtf(string $srcFontPath, array $codepoints): string
 function createFontforgeScript(string $srcFontPath, string $dstFontPath, array $codepoints): Generator
 {
     yield sprintf('Open("%s", 1);', $srcFontPath);
+    yield 'CIDFlatten();'; // FIXME https://gist.github.com/retorillo/0c80dea974816731a493afbc3a70fef2
     yield 'SelectNone();';
     foreach ($codepoints as $cp) {
         yield sprintf('SelectMore(0u%x);', $cp);
