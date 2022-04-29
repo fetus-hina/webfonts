@@ -7,7 +7,11 @@ SOURCE_FONT_FILES := \
 	fonts/src/Mplus1-Bold.otf \
 	fonts/src/Mplus1-Regular.otf \
 	fonts/src/Mplus2-Bold.otf \
-	fonts/src/Mplus2-Regular.otf
+	fonts/src/Mplus2-Regular.otf \
+	fonts/src/UDEVGothic-Bold.ttf \
+	fonts/src/UDEVGothic-BoldItalic.ttf \
+	fonts/src/UDEVGothic-Italic.ttf \
+	fonts/src/UDEVGothic-Regular.ttf
 
 .PHONY: all
 all: split-fonts

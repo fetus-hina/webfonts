@@ -12,6 +12,7 @@ WEBFONTS
   - BIZ UDP明朝
   - M PLUS 1
   - M PLUS 2
+  - UDEV Gothic
 
 LICENSE
 -------

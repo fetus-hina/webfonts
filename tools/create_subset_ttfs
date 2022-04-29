@@ -86,7 +86,7 @@ foreach (findSourceFonts() as $srcFontPath) {
                 $fontFaces[] = createFontFace(
                     sourceFontToCssFontFamily($srcFontPath),
                     sourceFontToLocalFontName($srcFontPath),
-                    false, // is italic
+                    str_contains(strtolower(basename($srcFontPath)), 'italic'), // is italic
                     sourceFontToWeight($srcFontPath),
                     $dstTtfPath,
                     stripDistPrefix($dstWoff1Path),
@@ -130,6 +130,7 @@ function sourceFontToCssFontFamily(string $fontPath): string
         'bizudpgothic' => 'BIZ UDPGothic',
         'bizudpmincho' => 'BIZ UDPMincho',
         'notoserifjp' => 'Noto Serif JP',
+        'udevgothic' => 'UDEV Gothic',
     ];
     foreach ($simpleMap as $prefix => $name) {
         if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {
@@ -154,6 +155,7 @@ function sourceFontToLocalFontName(string $fontPath): string
         'bizudpgothic' => 'BIZ UDPゴシック',
         'bizudpmincho' => 'BIZ UDP明朝',
         'notoserifjp' => 'Noto Serif JP',
+        'udevgothic' => 'UDEV Gothic',
     ];
     foreach ($simpleMap as $prefix => $name) {
         if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {
@@ -178,6 +180,14 @@ function sourceFontToWeight(string $fontPath): int
 
     if (preg_match('/^bizudp?(?:gothic|mincho)-(bold|regular)/', $fontFileName, $match)) {
         return convertFontWeight($match[1]);
+    }
+
+    if (preg_match('/^udevgothic-(.+?)\.ttf$/', $fontFileName, $match)) {
+        return match ($match[1]) {
+            'bold', 'bolditalic' => FONT_WEIGHT_BOLD,
+            'regular', 'italic' => FONT_WEIGHT_REGULAR,
+            default => throw new Exception(),
+        };
     }
 
     return FONT_WEIGHT_REGULAR;
