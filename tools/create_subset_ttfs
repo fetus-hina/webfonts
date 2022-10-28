@@ -129,11 +129,12 @@ function sourceFontToCssFontFamily(string $fontPath): string
         'bizudmincho' => 'BIZ UDMincho',
         'bizudpgothic' => 'BIZ UDPGothic',
         'bizudpmincho' => 'BIZ UDPMincho',
+        'lineseedjp' => 'LINE Seed JP',
         'notoserifjp' => 'Noto Serif JP',
         'udevgothic' => 'UDEV Gothic',
     ];
     foreach ($simpleMap as $prefix => $name) {
-        if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {
+        if (str_starts_with($fontFileName, $prefix)) {
             return $name;
         }
     }
@@ -154,11 +155,12 @@ function sourceFontToLocalFontName(string $fontPath): string
         'bizudmincho' => 'BIZ UD明朝',
         'bizudpgothic' => 'BIZ UDPゴシック',
         'bizudpmincho' => 'BIZ UDP明朝',
+        'lineseedjp' => 'LINE Seed JP_OTF',
         'notoserifjp' => 'Noto Serif JP',
         'udevgothic' => 'UDEV Gothic',
     ];
     foreach ($simpleMap as $prefix => $name) {
-        if (strncmp($fontFileName, $prefix, strlen($prefix)) === 0) {
+        if (str_starts_with($fontFileName, $prefix)) {
             return $name;
         }
     }
@@ -182,6 +184,10 @@ function sourceFontToWeight(string $fontPath): int
         return convertFontWeight($match[1]);
     }
 
+    if (preg_match('/^lineseedjp_(?:otf|ttf)_(bd|eb|rg|th)/', $fontFileName, $match)) {
+        return convertFontWeight($match[1]);
+    }
+
     if (preg_match('/^udevgothic-(.+?)\.ttf$/', $fontFileName, $match)) {
         return match ($match[1]) {
             'bold', 'bolditalic' => FONT_WEIGHT_BOLD,
@@ -196,14 +202,14 @@ function sourceFontToWeight(string $fontPath): int
 function convertFontWeight(string $weightString): int
 {
     return match ($weightString) {
-        'thin' => FONT_WEIGHT_THIN,
+        'thin', 'th' => FONT_WEIGHT_THIN,
         'extralight' => FONT_WEIGHT_EXTRA_LIGHT,
         'light' => FONT_WEIGHT_LIGHT,
-        'regular' => FONT_WEIGHT_REGULAR,
+        'regular', 'rg' => FONT_WEIGHT_REGULAR,
         'medium' => FONT_WEIGHT_MEDIUM,
         'semibold' => FONT_WEIGHT_SEMI_BOLD,
-        'bold' => FONT_WEIGHT_BOLD,
-        'extrabold' => FONT_WEIGHT_EXTRA_BOLD,
+        'bold', 'bd' => FONT_WEIGHT_BOLD,
+        'extrabold', 'eb' => FONT_WEIGHT_EXTRA_BOLD,
         'black' => FONT_WEIGHT_BLACK,
         default => throw new RuntimeException(),
     };
@@ -363,13 +369,20 @@ function createFontforgeScript(string $srcFontPath, string $dstFontPath, array $
 {
     yield sprintf('Open("%s", 1);', $srcFontPath);
     yield 'CIDFlatten();'; // FIXME https://gist.github.com/retorillo/0c80dea974816731a493afbc3a70fef2
+    yield 'SelectAll();';
+    yield 'ClearInstrs();';
+    yield 'ClearHints();';
+    foreach (['fpgm', 'prep', 'cvt'] as $tag) {
+        yield sprintf('ClearTable("%s");', $tag);
+    }
+    yield 'DontAutoHint();';
     yield 'SelectNone();';
     foreach ($codepoints as $cp) {
         yield sprintf('SelectMore(0u%x);', $cp);
     }
     yield 'SelectInvert();';
     yield 'DetachAndRemoveGlyphs();';
-    yield sprintf('Generate("%s", "", %d);', $dstFontPath, 0x4 | 0x8);
+    yield sprintf('Generate("%s", "", %d);', $dstFontPath, 0x4 | 0x8 | 0x40000 | 0x80000);
 }
 
 function makeWoff1(string $ttfPath, string $woffPath): void

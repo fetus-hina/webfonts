@@ -4,6 +4,10 @@ SOURCE_FONT_FILES := \
 	fonts/src/BIZUDPGothic-Bold.ttf \
 	fonts/src/BIZUDPGothic-Regular.ttf \
 	fonts/src/BIZUDPMincho-Regular.ttf \
+	fonts/src/LINESeedJP_OTF_Bd.otf \
+	fonts/src/LINESeedJP_OTF_Eb.otf \
+	fonts/src/LINESeedJP_OTF_Rg.otf \
+	fonts/src/LINESeedJP_OTF_Th.otf \
 	fonts/src/Mplus1-Bold.otf \
 	fonts/src/Mplus1-Regular.otf \
 	fonts/src/Mplus2-Bold.otf \
@@ -17,7 +21,7 @@ SOURCE_FONT_FILES := \
 all: split-fonts
 
 .PHONY: split-fonts
-split-fonts: $(SOURCE_FONT_FILES) node_modules
+split-fonts: source-fonts node_modules
 	@rm -rf fonts/dist/*
 	tools/create_subset_ttfs
 
@@ -26,7 +30,11 @@ clean:
 	rm -rf \
 		fonts/dist/* \
 		fonts/src/BIZUD* \
+		fonts/src/LINESeedJP* \
 		fonts/src/Mplus*
+
+.PHONY: source-fonts
+source-fonts: $(SOURCE_FONT_FILES)
 
 fonts/src/BIZUDGothic%.ttf:
 	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-gothic/raw/main/fonts/ttf/$(notdir $@)'
@@ -39,6 +47,14 @@ fonts/src/BIZUDMincho%.ttf:
 
 fonts/src/BIZUDPMincho%.ttf:
 	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-mincho/raw/main/fonts/ttf/$(notdir $@)'
+
+fonts/src/LINESeedJP_OTF_%.otf: fonts/src/LINE_Seed_Sans_JP.zip
+	@rm -f $@
+	cd $(dir $<) && unzip -j $(notdir $<) */Desktop/OTF/$(notdir $@)
+	@touch $@
+
+fonts/src/LINE_Seed_Sans_JP.zip:
+	curl -fsSL -o $@ 'https://seed.line.me/src/images/fonts/LINE_Seed_Sans_JP.zip'
 
 fonts/src/Mplus%.otf:
 	curl -fsSL -o $@ 'https://github.com/coz-m/MPLUS_FONTS/raw/master/fonts/otf/$(notdir $@)'

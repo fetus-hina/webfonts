@@ -5,9 +5,9 @@
   "author": "AIZAWA Hina",
   "license": "MIT",
   "dependencies": {
-    "cssnano": "^5.1.7",
-    "postcss-cli": "^9.1.0",
+    "cssnano": "^5.1.13",
+    "postcss-cli": "^10.0.0",
     "ttf2woff": "^3.0.0",
-    "ttf2woff2": "^4.0.4"
+    "ttf2woff2": "^4.0.5"
   }
 }

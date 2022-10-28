@@ -1,4 +1,5 @@
 *.otf
 *.ttf
+*.zip
 
 !UDEVGothic-*.ttf
