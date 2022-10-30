@@ -40,7 +40,12 @@ foreach (findSourceFonts() as $srcFontPath) {
     $fontFaces = [];
     foreach ($characterListFiles as $characterListFile => $characterList) {
         fprintf(STDERR, "  * %s ... ", basename($characterListFile));
-        $codepoints = createCharacterList($srcCodePoints, $characterList);
+        $codepoints = createCharacterList(
+            $srcCodePoints,
+            $characterList,
+            str_contains($srcFontPath, 'LINESeedJP'), // skip greek
+            str_contains($srcFontPath, 'LINESeedJP'), // skip cyrillic
+        );
         fprintf(STDERR, " %d candidates, %d glyphs\n", count($characterList), count($codepoints));
         if (count($codepoints) < 1) {
             continue;
@@ -318,14 +323,41 @@ function loadCharacterList(string $textPath): array
  * @param int[] $codepoints2
  * @return int[]
  */
-function createCharacterList(array $codepoints1, array $codepoints2): array
-{
+function createCharacterList(
+    array $codepoints1,
+    array $codepoints2,
+    bool $skipGreek = false,
+    bool $skipCyrillic = false
+): array {
     return array_values(
         array_filter(
             $codepoints1,
-            fn (int $cp): bool => in_array($cp, $codepoints2, true),
+            fn (int $cp): bool => in_array($cp, $codepoints2, true) &&
+                (!$skipGreek || !isGreek($cp)) &&
+                (!$skipCyrillic || !isCyrillic($cp)),
         ),
     );
+}
+
+function isGreek(int $cp): bool
+{
+    return inRange($cp, 0x0370, 0x03FF) ||
+        inRange($cp, 0x1F00, 0x1FFF);
+}
+
+function isCyrillic(int $cp): bool
+{
+    return inRange($cp, 0x0400, 0x04FF) ||
+        inRange($cp, 0x0500, 0x052F) ||
+        inRange($cp, 0x2DE0, 0x2DFF) ||
+        inRange($cp, 0xA640, 0xA69F) ||
+        inRange($cp, 0x1C80, 0x1C8F) ||
+        inRange($cp, 0x1E030, 0x1E08F);
+}
+
+function inRange(int $value, int $lower, int $upper): bool
+{
+    return $lower <= $value && $value <= $upper;
 }
 
 function stringToInteger(string $str): int

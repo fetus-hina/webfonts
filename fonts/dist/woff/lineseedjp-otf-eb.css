@@ -13,9 +13,9 @@
   font-family: "LINE Seed JP";
   font-style: normal;
   font-weight: 800;
-  src: local("LINE Seed JP_OTF"), url("lineseedjp-otf-eb/02-b7b6409a9008f498.woff2") format("woff2"), url("lineseedjp-otf-eb/02-b7b6409a9008f498.woff") format("woff");
+  src: local("LINE Seed JP_OTF"), url("lineseedjp-otf-eb/02-6bf43223d7b97b31.woff2") format("woff2"), url("lineseedjp-otf-eb/02-6bf43223d7b97b31.woff") format("woff");
   text-rendering: optimizeLegibility;
-  unicode-range: U+131, U+141-142, U+152-153, U+160-161, U+178, U+17D-17E, U+192, U+391-3A1, U+3A3-3A9, U+3B1-3C1, U+3C3-3C9, U+401, U+410-44F, U+451;
+  unicode-range: U+131, U+141-142, U+152-153, U+160-161, U+178, U+17D-17E, U+192;
 }
 
 @font-face {
