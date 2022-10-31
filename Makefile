@@ -8,6 +8,11 @@ SOURCE_FONT_FILES := \
 	fonts/src/LINESeedJP_OTF_Eb.otf \
 	fonts/src/LINESeedJP_OTF_Rg.otf \
 	fonts/src/LINESeedJP_OTF_Th.otf \
+	fonts/src/LINESeedSans_Bd.otf \
+	fonts/src/LINESeedSans_He.otf \
+	fonts/src/LINESeedSans_Rg.otf \
+	fonts/src/LINESeedSans_Th.otf \
+	fonts/src/LINESeedSans_XBd.otf \
 	fonts/src/Mplus1-Bold.otf \
 	fonts/src/Mplus1-Regular.otf \
 	fonts/src/Mplus2-Bold.otf \
@@ -30,7 +35,7 @@ clean:
 	rm -rf \
 		fonts/dist/* \
 		fonts/src/BIZUD* \
-		fonts/src/LINESeedJP* \
+		fonts/src/LINESeed* \
 		fonts/src/Mplus*
 
 .PHONY: source-fonts
@@ -53,8 +58,15 @@ fonts/src/LINESeedJP_OTF_%.otf: fonts/src/LINE_Seed_Sans_JP.zip
 	cd $(dir $<) && unzip -j $(notdir $<) */Desktop/OTF/$(notdir $@)
 	@touch $@
 
+fonts/src/LINESeedSans_%.otf: fonts/src/LINE_Seed_Sans_EN.zip
+	@rm -f $@
+	cd $(dir $<) && unzip -j $(notdir $<) Desktop/OTF/$(notdir $@)
+
 fonts/src/LINE_Seed_Sans_JP.zip:
 	curl -fsSL -o $@ 'https://seed.line.me/src/images/fonts/LINE_Seed_Sans_JP.zip'
+
+fonts/src/LINE_Seed_Sans_EN.zip:
+	curl -fsSL -o $@ 'https://seed.line.me/src/images/fonts/LINE_Seed_Sans_EN.zip'
 
 fonts/src/Mplus%.otf:
 	curl -fsSL -o $@ 'https://github.com/coz-m/MPLUS_FONTS/raw/master/fonts/otf/$(notdir $@)'

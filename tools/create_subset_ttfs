@@ -135,6 +135,7 @@ function sourceFontToCssFontFamily(string $fontPath): string
         'bizudpgothic' => 'BIZ UDPGothic',
         'bizudpmincho' => 'BIZ UDPMincho',
         'lineseedjp' => 'LINE Seed JP',
+        'lineseedsans' => 'LINE Seed EN',
         'notoserifjp' => 'Noto Serif JP',
         'udevgothic' => 'UDEV Gothic',
     ];
@@ -161,6 +162,7 @@ function sourceFontToLocalFontName(string $fontPath): string
         'bizudpgothic' => 'BIZ UDPゴシック',
         'bizudpmincho' => 'BIZ UDP明朝',
         'lineseedjp' => 'LINE Seed JP_OTF',
+        'lineseedsans' => 'LINE Seed Sans',
         'notoserifjp' => 'Noto Serif JP',
         'udevgothic' => 'UDEV Gothic',
     ];
@@ -189,7 +191,7 @@ function sourceFontToWeight(string $fontPath): int
         return convertFontWeight($match[1]);
     }
 
-    if (preg_match('/^lineseedjp_(?:otf|ttf)_(bd|eb|rg|th)/', $fontFileName, $match)) {
+    if (preg_match('/^lineseed(?:jp_(?:otf|ttf)|sans)_(bd|eb|he|rg|th|xbd)/', $fontFileName, $match)) {
         return convertFontWeight($match[1]);
     }
 
@@ -208,13 +210,13 @@ function convertFontWeight(string $weightString): int
 {
     return match ($weightString) {
         'thin', 'th' => FONT_WEIGHT_THIN,
-        'extralight' => FONT_WEIGHT_EXTRA_LIGHT,
+        'extralight', 'he' => FONT_WEIGHT_EXTRA_LIGHT,
         'light' => FONT_WEIGHT_LIGHT,
         'regular', 'rg' => FONT_WEIGHT_REGULAR,
         'medium' => FONT_WEIGHT_MEDIUM,
         'semibold' => FONT_WEIGHT_SEMI_BOLD,
         'bold', 'bd' => FONT_WEIGHT_BOLD,
-        'extrabold', 'eb' => FONT_WEIGHT_EXTRA_BOLD,
+        'extrabold', 'eb', 'xbd' => FONT_WEIGHT_EXTRA_BOLD,
         'black' => FONT_WEIGHT_BLACK,
         default => throw new RuntimeException(),
     };

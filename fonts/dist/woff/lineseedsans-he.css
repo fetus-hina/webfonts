@@ -1,0 +1,19 @@
+@font-face {
+  font-display: swap;
+  font-family: "LINE Seed EN";
+  font-style: normal;
+  font-weight: 200;
+  src: local("LINE Seed Sans"), url("lineseedsans-he/01-05d54f637153edea.woff2") format("woff2"), url("lineseedsans-he/01-05d54f637153edea.woff") format("woff");
+  text-rendering: optimizeLegibility;
+  unicode-range: U+20-5F, U+61-7E;
+}
+
+@font-face {
+  font-display: swap;
+  font-family: "LINE Seed EN";
+  font-style: normal;
+  font-weight: 200;
+  src: local("LINE Seed Sans"), url("lineseedsans-he/02-4b6bf185928134f8.woff2") format("woff2"), url("lineseedsans-he/02-4b6bf185928134f8.woff") format("woff");
+  text-rendering: optimizeLegibility;
+  unicode-range: U+A2-A5, U+A7, U+A9, U+AC, U+AE, U+B0, U+B6-B7, U+BC-BE, U+D7, U+F7, U+2010, U+2018-2019, U+201C-201D, U+2020-2021, U+2026, U+2030;
+}
