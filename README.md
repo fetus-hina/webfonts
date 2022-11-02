@@ -10,6 +10,8 @@ WEBFONTS
 
   - BIZ UDPゴシック
   - BIZ UDP明朝
+  - LINE Seed EN
+  - LINE Seed JP
   - M PLUS 1
   - M PLUS 2
   - UDEV Gothic
