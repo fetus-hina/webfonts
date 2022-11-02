@@ -60,7 +60,7 @@ fonts/src/LINESeedJP_OTF_%.otf: fonts/src/LINE_Seed_Sans_JP.zip
 
 fonts/src/LINESeedSans_%.otf: fonts/src/LINE_Seed_Sans_EN.zip
 	@rm -f $@
-	cd $(dir $<) && unzip -j $(notdir $<) Desktop/OTF/$(notdir $@)
+	cd $(dir $<) && unzip -j $(notdir $<) */Desktop/OTF/$(notdir $@)
 
 fonts/src/LINE_Seed_Sans_JP.zip:
 	curl -fsSL -o $@ 'https://seed.line.me/src/images/fonts/LINE_Seed_Sans_JP.zip'

@@ -4,7 +4,7 @@
 declare(strict_types=1);
 
 define('BASE_DIR', dirname(__DIR__));
-define('TARGET_GLYPH_SIZE', 300);
+define('TARGET_GLYPH_SIZE', 100);
 define('TARGET_CHAR_LIST_WIDTH', 120);
 
 define('FONT_WEIGHT_THIN', 100);
@@ -152,7 +152,10 @@ function sourceFontToCssFontFamily(string $fontPath): string
     throw new RuntimeException();
 }
 
-function sourceFontToLocalFontName(string $fontPath): string
+/**
+ * @return string[]
+ */
+function sourceFontToLocalFontName(string $fontPath): array
 {
     $fontFileName = strtolower((string)pathinfo($fontPath, PATHINFO_FILENAME));
 
@@ -161,19 +164,21 @@ function sourceFontToLocalFontName(string $fontPath): string
         'bizudmincho' => 'BIZ UD明朝',
         'bizudpgothic' => 'BIZ UDPゴシック',
         'bizudpmincho' => 'BIZ UDP明朝',
-        'lineseedjp' => 'LINE Seed JP_OTF',
+        'lineseedjp' => ['LINE Seed JP_OTF', 'LINE Seed JP_TTF'],
         'lineseedsans' => 'LINE Seed Sans',
         'notoserifjp' => 'Noto Serif JP',
         'udevgothic' => 'UDEV Gothic',
     ];
     foreach ($simpleMap as $prefix => $name) {
         if (str_starts_with($fontFileName, $prefix)) {
-            return $name;
+            return (array)$name;
         }
     }
 
     if (preg_match('/^mplus(\d+)-/', $fontFileName, $match)) {
-        return sprintf('M PLUS %d', $match[1]);
+        return [
+            sprintf('M PLUS %d', $match[1]),
+        ];
     }
 
     throw new RuntimeException();
@@ -445,7 +450,7 @@ function makeWoff2(string $ttfPath, string $woffPath): void
 
 function createFontFace(
     string $cssFontFamily,
-    ?string $localFontName,
+    ?array $localFontNames,
     bool $isItalic,
     int $weight,
     string $localTtfPath,
@@ -453,12 +458,17 @@ function createFontFace(
     string $webWoff2Path
 ): string {
     $srcs = [];
-    if ($localFontName) {
-        $srcs[] = sprintf('local("%s")', $localFontName);
+    if ($localFontNames) {
+        $srcs = array_merge($srcs, array_map(
+            fn (string $name): string => sprintf('local("%s")', $localFontName),
+            $srcs,
+        ));
     }
+
     if ($webWoff2Path) {
         $srcs[] = sprintf('url("%s") format("woff2")', $webWoff2Path);
     }
+
     if ($webWoff1Path) {
         $srcs[] = sprintf('url("%s") format("woff")', $webWoff1Path);
     }
