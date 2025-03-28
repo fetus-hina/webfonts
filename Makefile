@@ -4,6 +4,8 @@ SOURCE_FONT_FILES := \
 	fonts/src/BIZUDPGothic-Bold.ttf \
 	fonts/src/BIZUDPGothic-Regular.ttf \
 	fonts/src/BIZUDPMincho-Regular.ttf \
+	fonts/src/IBMPlexSansJP-Bold.ttf \
+	fonts/src/IBMPlexSansJP-Regular.ttf \
 	fonts/src/LINESeedJP_OTF_Bd.otf \
 	fonts/src/LINESeedJP_OTF_Eb.otf \
 	fonts/src/LINESeedJP_OTF_Rg.otf \
@@ -35,6 +37,7 @@ clean:
 	rm -rf \
 		fonts/dist/* \
 		fonts/src/BIZUD* \
+		fonts/src/IBMPlexSans* \
 		fonts/src/LINESeed* \
 		fonts/src/Mplus*
 
@@ -52,6 +55,9 @@ fonts/src/BIZUDMincho%.ttf:
 
 fonts/src/BIZUDPMincho%.ttf:
 	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-mincho/raw/main/fonts/ttf/$(notdir $@)'
+
+fonts/src/IBMPlexSansJP-%.ttf:
+	curl -fsSL -o $@ 'https://github.com/IBM/plex/raw/refs/heads/master/packages/plex-sans-jp/fonts/complete/ttf/unhinted/$(notdir $@)'
 
 fonts/src/LINESeedJP_OTF_%.otf: fonts/src/LINE_Seed_Sans_JP.zip
 	@rm -f $@

@@ -10,6 +10,7 @@ WEBFONTS
 
   - BIZ UDPゴシック
   - BIZ UDP明朝
+  - IBM Plex Sans JP
   - LINE Seed EN
   - LINE Seed JP
   - M PLUS 1

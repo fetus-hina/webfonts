@@ -134,6 +134,7 @@ function sourceFontToCssFontFamily(string $fontPath): string
         'bizudmincho' => 'BIZ UDMincho',
         'bizudpgothic' => 'BIZ UDPGothic',
         'bizudpmincho' => 'BIZ UDPMincho',
+        'ibmplexsansjp' => 'IBM Plex Sans JP',
         'lineseedjp' => 'LINE Seed JP',
         'lineseedsans' => 'LINE Seed EN',
         'notoserifjp' => 'Noto Serif JP',
@@ -164,6 +165,7 @@ function sourceFontToLocalFontName(string $fontPath): array
         'bizudmincho' => 'BIZ UD明朝',
         'bizudpgothic' => 'BIZ UDPゴシック',
         'bizudpmincho' => 'BIZ UDP明朝',
+        'ibmplexsansjp' => 'IBM Plex Sans JP',
         'lineseedjp' => ['LINE Seed JP_OTF', 'LINE Seed JP_TTF'],
         'lineseedsans' => 'LINE Seed Sans',
         'notoserifjp' => 'Noto Serif JP',
@@ -193,6 +195,10 @@ function sourceFontToWeight(string $fontPath): int
     }
 
     if (preg_match('/^bizudp?(?:gothic|mincho)-(bold|regular)/', $fontFileName, $match)) {
+        return convertFontWeight($match[1]);
+    }
+
+    if (preg_match('/^ibmplexsansjp-(bold|regular)/', $fontFileName, $match)) {
         return convertFontWeight($match[1]);
     }
 
@@ -459,10 +465,13 @@ function createFontFace(
 ): string {
     $srcs = [];
     if ($localFontNames) {
-        $srcs = array_merge($srcs, array_map(
-            fn (string $name): string => sprintf('local("%s")', $localFontName),
+        $srcs = array_merge(
             $srcs,
-        ));
+            array_map(
+                fn (string $name): string => sprintf('local("%s")', $name),
+                $localFontNames,
+            ),
+        );
     }
 
     if ($webWoff2Path) {
