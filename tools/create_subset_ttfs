@@ -134,6 +134,7 @@ function sourceFontToCssFontFamily(string $fontPath): string
         'bizudmincho' => 'BIZ UDMincho',
         'bizudpgothic' => 'BIZ UDPGothic',
         'bizudpmincho' => 'BIZ UDPMincho',
+        'formudpgothic' => 'FORM UDPGothic',
         'ibmplexsansjp' => 'IBM Plex Sans JP',
         'lineseedjp' => 'LINE Seed JP',
         'lineseedsans' => 'LINE Seed EN',
@@ -165,6 +166,7 @@ function sourceFontToLocalFontName(string $fontPath): array
         'bizudmincho' => 'BIZ UD明朝',
         'bizudpgothic' => 'BIZ UDPゴシック',
         'bizudpmincho' => 'BIZ UDP明朝',
+        'formudpgothic' => ['帳票 UDPゴシック', 'FORM UDPGothic'],
         'ibmplexsansjp' => 'IBM Plex Sans JP',
         'lineseedjp' => ['LINE Seed JP_OTF', 'LINE Seed JP_TTF'],
         'lineseedsans' => 'LINE Seed Sans',
@@ -194,7 +196,7 @@ function sourceFontToWeight(string $fontPath): int
         return convertFontWeight($match[1]);
     }
 
-    if (preg_match('/^bizudp?(?:gothic|mincho)-(bold|regular)/', $fontFileName, $match)) {
+    if (preg_match('/^(?:biz|form)udp?(?:gothic|mincho)-(bold|regular)/', $fontFileName, $match)) {
         return convertFontWeight($match[1]);
     }
 

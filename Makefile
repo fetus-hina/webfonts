@@ -4,6 +4,8 @@ SOURCE_FONT_FILES := \
 	fonts/src/BIZUDPGothic-Bold.ttf \
 	fonts/src/BIZUDPGothic-Regular.ttf \
 	fonts/src/BIZUDPMincho-Regular.ttf \
+	fonts/src/FORMUDPGothic-Bold.ttf \
+	fonts/src/FORMUDPGothic-Regular.ttf \
 	fonts/src/IBMPlexSansJP-Bold.ttf \
 	fonts/src/IBMPlexSansJP-Regular.ttf \
 	fonts/src/LINESeedJP_OTF_Bd.otf \
@@ -55,6 +57,9 @@ fonts/src/BIZUDMincho%.ttf:
 
 fonts/src/BIZUDPMincho%.ttf:
 	curl -fsSL -o $@ 'https://github.com/googlefonts/morisawa-biz-ud-mincho/raw/main/fonts/ttf/$(notdir $@)'
+
+fonts/src/FORMUDPGothic-%.ttf:
+	curl -fsSL -o $@ 'https://github.com/jz5/FORM-UDPGothic/raw/refs/heads/main/release/$(notdir $@)'
 
 fonts/src/IBMPlexSansJP-%.ttf:
 	curl -fsSL -o $@ 'https://github.com/IBM/plex/raw/refs/heads/master/packages/plex-sans-jp/fonts/complete/ttf/unhinted/$(notdir $@)'
